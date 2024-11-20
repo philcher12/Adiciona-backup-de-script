@@ -1,22 +1,36 @@
 #!/bin/bash
 
-echo "Iniciando o backup em $(date)" >> ~/backup_log.txt
+# Diretório de origem e destino
+SOURCE_DIR="/home/usuario/documentos"
+RSYNC_BACKUP_DIR="/home/usuario/backups"
+BORG_BACKUP_DIR="/home/usuario/borg-backups"
 
-ORIGEM=~/Documentos2
-DESTINO=~/Backup
+# Função para fazer backup com rsync
+backup_rsync() {
+    echo "Iniciando backup com rsync..."
+    rsync -av --progress "$SOURCE_DIR/" "$RSYNC_BACKUP_DIR/"
+    echo "Backup com rsync concluído!"
+}
 
-# Cria o diretório de destino, caso não exista
-mkdir -p $DESTINO
+# Função para fazer backup com Borg
+backup_borg() {
+    echo "Iniciando backup com BorgBackup..."
+    # Inicializa o repositório, se ele não existir
+    if [ ! -d "$BORG_BACKUP_DIR" ]; then
+        mkdir -p "$BORG_BACKUP_DIR"
+        borg init --encryption=repokey "$BORG_BACKUP_DIR"
+    fi
+    # Cria o backup com um nome de arquivo baseado na data e hora
+    borg create --progress "$BORG_BACKUP_DIR::backup-$(date +%Y-%m-%d-%H%M)" "$SOURCE_DIR"
+    echo "Backup com Borg concluído!"
+}
 
-# Verifica se a pasta de origem tem arquivos
-if [ -z "$(ls -A $ORIGEM)" ]; then
-    echo "A pasta de origem está vazia. Nenhum arquivo para backup."
+# Verifica o tipo de backup a ser executado
+if [ "$1" == "rsync" ]; then
+    backup_rsync
+elif [ "$1" == "borg" ]; then
+    backup_borg
 else
-    # Copia os arquivos do diretório de origem para o de destino
-    cp -r $ORIGEM/* $DESTINO
+    echo "Por favor, especifique o tipo de backup: rsync ou borg."
+    exit 1
 fi
-
-# Cria um arquivo de backup compactado
-tar -czf $DESTINO/backup_$(date +%F).tar.gz -C $DESTINO .
-
-echo "Backup concluído em $(date)" >> ~/backup_log.txt
