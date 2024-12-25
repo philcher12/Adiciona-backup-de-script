@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Diretório de origem e destino
-SOURCE_DIR="/home/usuario/documentos"
-RSYNC_BACKUP_DIR="/home/usuario/backups"
-BORG_BACKUP_DIR="/home/usuario/borg-backups"
+SOURCE_DIR="/home/philipe/documentos"
+RSYNC_BACKUP_DIR="/home/philipe/backups"
+BORG_BACKUP_DIR="/home/philipe/borg-backups"
 
 # Função para fazer backup com rsync
 backup_rsync() {
